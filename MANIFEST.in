@@ -1,0 +1,2 @@
+include _pbs.so
+include pbs.pth
