@@ -2,17 +2,20 @@ import os
 from setuptools import setup
 from distutils import sysconfig
 
-site_packages_path = sysconfig.get_python_lib()
+site_packages_path = sysconfig.get_python_lib(prefix='./')
 
 setup(
     name='pbs-python',
     packages=['pbs'],
-    version='4.4.1',
+    version='4.4.1.2',
     author='Radik Fattakhov',
     author_email='radikft@gmail.com',
     description='openpbs/torque python interface',
     keywords=['pbs'],
-    data_files=[(site_packages_path, ['pbs.pth']), (os.path.join(site_packages_path, 'pbs'), ['_pbs.so'])],
+    data_files=[
+        (site_packages_path, ['pbs.pth']),
+        (os.path.join(site_packages_path, 'pbs'), ['_pbs.so'])
+    ],
     url='http://github.com/radik/pbs-python',
     license='LGPLv3',
     classifiers=[
