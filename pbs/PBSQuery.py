@@ -58,12 +58,12 @@ you are interested in, eg: only show state of nodes
     l.append('state')
     nodes = p.getnodes(l)
 """
+import pbs
 import UserDict
 import string
+import sys
 import re
 import types
-
-from pbs_python import pbs
 
 
 REG_SUBRANGE = re.compile(r'^\d+(-\d+)?$')

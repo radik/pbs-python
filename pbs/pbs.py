@@ -322,10 +322,13 @@ ATTR_nomailforce = _pbs.ATTR_nomailforce
 ATTR_interactivejobscanroam = _pbs.ATTR_interactivejobscanroam
 ATTR_crayenabled = _pbs.ATTR_crayenabled
 ATTR_nppcu = _pbs.ATTR_nppcu
+ATTR_login_node_key = _pbs.ATTR_login_node_key
 ATTR_maxuserqueuable = _pbs.ATTR_maxuserqueuable
 ATTR_automaticrequeueexitcode = _pbs.ATTR_automaticrequeueexitcode
 ATTR_jobsynctimeout = _pbs.ATTR_jobsynctimeout
+ATTR_pass_cpu_clock = _pbs.ATTR_pass_cpu_clock
 ATTR_NODE_state = _pbs.ATTR_NODE_state
+ATTR_NODE_power_state = _pbs.ATTR_NODE_power_state
 ATTR_NODE_np = _pbs.ATTR_NODE_np
 ATTR_NODE_properties = _pbs.ATTR_NODE_properties
 ATTR_NODE_ntype = _pbs.ATTR_NODE_ntype
@@ -341,6 +344,8 @@ ATTR_NODE_gpustatus = _pbs.ATTR_NODE_gpustatus
 ATTR_NODE_gpus_str = _pbs.ATTR_NODE_gpus_str
 ATTR_NODE_mics = _pbs.ATTR_NODE_mics
 ATTR_NODE_micstatus = _pbs.ATTR_NODE_micstatus
+ATTR_copy_on_rerun = _pbs.ATTR_copy_on_rerun
+ATTR_job_exclusive_on_use = _pbs.ATTR_job_exclusive_on_use
 ATTR_mailsubjectfmt = _pbs.ATTR_mailsubjectfmt
 ATTR_mailbodyfmt = _pbs.ATTR_mailbodyfmt
 CHECKPOINT_UNSPECIFIED = _pbs.CHECKPOINT_UNSPECIFIED
@@ -367,6 +372,12 @@ ND_job_exclusive = _pbs.ND_job_exclusive
 ND_job_sharing = _pbs.ND_job_sharing
 ND_busy = _pbs.ND_busy
 ND_state_unknown = _pbs.ND_state_unknown
+ND_running = _pbs.ND_running
+ND_standby = _pbs.ND_standby
+ND_suspend = _pbs.ND_suspend
+ND_sleep = _pbs.ND_sleep
+ND_hibernate = _pbs.ND_hibernate
+ND_shutdown = _pbs.ND_shutdown
 ND_active = _pbs.ND_active
 ND_all = _pbs.ND_all
 ND_up = _pbs.ND_up
@@ -556,6 +567,10 @@ def pbs_connect(*args):
   return _pbs.pbs_connect(*args)
 pbs_connect = _pbs.pbs_connect
 
+def pbs_query_max_connections():
+  return _pbs.pbs_query_max_connections()
+pbs_query_max_connections = _pbs.pbs_query_max_connections
+
 def pbs_default():
   return _pbs.pbs_default()
 pbs_default = _pbs.pbs_default
@@ -672,9 +687,9 @@ def pbs_submit(*args):
   return _pbs.pbs_submit(*args)
 pbs_submit = _pbs.pbs_submit
 
-def pbs_submit_hash(*args):
-  return _pbs.pbs_submit_hash(*args)
-pbs_submit_hash = _pbs.pbs_submit_hash
+def pbs_submit_hash_ext(*args):
+  return _pbs.pbs_submit_hash_ext(*args)
+pbs_submit_hash_ext = _pbs.pbs_submit_hash_ext
 
 def pbs_terminate(*args):
   return _pbs.pbs_terminate(*args)
@@ -792,6 +807,14 @@ log_record = _pbs.log_record
 def log_available(*args):
   return _pbs.log_available(*args)
 log_available = _pbs.log_available
+
+def log_init(*args):
+  return _pbs.log_init(*args)
+log_init = _pbs.log_init
+
+def chk_file_sec(*args):
+  return _pbs.chk_file_sec(*args)
+chk_file_sec = _pbs.chk_file_sec
 PBSEVENT_ERROR = _pbs.PBSEVENT_ERROR
 PBSEVENT_SYSTEM = _pbs.PBSEVENT_SYSTEM
 PBSEVENT_ADMIN = _pbs.PBSEVENT_ADMIN
@@ -817,8 +840,19 @@ MAX_PATH_LEN = _pbs.MAX_PATH_LEN
 SECS_PER_DAY = _pbs.SECS_PER_DAY
 TRUE = _pbs.TRUE
 FALSE = _pbs.FALSE
+PBSE_TOTAL_CEILING = _pbs.PBSE_TOTAL_CEILING
+PBSE_ = _pbs.PBSE_
+PBSE_NONE = _pbs.PBSE_NONE
+
+def pbse_to_txt(*args):
+  return _pbs.pbse_to_txt(*args)
+pbse_to_txt = _pbs.pbse_to_txt
+
+def pbs_strerror(*args):
+  return _pbs.pbs_strerror(*args)
+pbs_strerror = _pbs.pbs_strerror
 #  PBS python interface
-#  Author: Bas van der Vlies <basv@sara.nl>
+#  Author: Bas van der Vlies <bas.vandervlies@surfsara.nl>
 #  Date  : 27 Feb 2002
 #  Desc. : This is python wrapper class for getting the resource
 #          mom values.
@@ -905,6 +939,7 @@ def use_default_keywords(id, d):
   """
   Get the default values from the mom daemon
   """
+  err = 0
   for res in default_mom_res:
     addreq(id, res)
     resp = getreq(id)
@@ -951,93 +986,16 @@ def get_mom_values(id, list = None):
      
   return d
 
-version_info = ( 4, 4, 1 )
-version = 'SARA pbs_python version 4.4.1'
+version_info = ( 4, 4, 0 )
+version = 'SARA pbs_python version 4.4.0'
 
-# A useful dict with error codes to text
+## A useful dict with error codes to text
+#
+# Author: Bas van der Vlies <bas.vandervlies@surfsara.nl>
 #
 # SVN Info:
 #	$Id: errors.py 429 2005-11-04 13:59:06Z bas $
 #
-errors_txt = { 
-	0 : 'no error',
-	15001 :	 'Unknown Job Identifier',
-	15002 : 'Undefined Attribute',
-	15003 : 'attempt to set READ ONLY attribute',
-	15004 : 'Invalid request',
-	15005 : 'Unknown batch request',
-	15006 : 'Too many submit retries',
-	15007 : 'No permission',
-	15008 : 'access from host not allowed',
-	15009 : 'job already exists',
-	15010 : 'system error occurred',
-	15011 : 'internal server error occurred',
-	15012 : 'parent job of dependent in rte que',
-	15013 : 'unknown signal name',
-	15014 : 'bad attribute value',
-	15015 : 'Cannot modify attrib in run state',
-	15016 : 'request invalid for job state',
-	15018 : 'Unknown queue name',
-	15019 : 'Invalid Credential in request',
-	15020 : 'Expired Credential in request',
-	15021 : 'Queue not enabled',
-	15022 : 'No access permission for queue',
-	15023 : 'Bad user - no password entry',
-	15024 : 'Max hop count exceeded',
-	15025 : 'Queue already exists',
-	15026 : 'incompatable queue attribute type',
-	15027 : 'Queue Busy (not empty)',
-	15028 : 'Queue name too long',
-	15029 : 'Feature',
-	15030 : 'Cannot enable queue,needs add def',
-	15031 : 'Protocol (ASN.1) error',
-	15032 : 'Bad attribute list structure',
-	15033 : 'No free connections',
-	15034 : 'No server to connect to',
-	15035 : 'Unknown resource',
-	15036 : 'Job exceeds Queue resource limits',
-	15037 : 'No Default Queue Defined',
-	15038 : 'Job Not Rerunnable',
-	15039 : 'Route rejected by all destinations',
-	15040 : 'Time in Route Queue Expired',
-	15041 : 'Request to MOM failed',
-	15042 : '(qsub) cannot access script file',
-	15043 : 'Stage In of files failed',
-	15044 : 'Resources temporarily unavailable',
-	15045 : 'Bad Group specified',
-	15046 : 'Max number of jobs in queue',
-	15047 : 'Checkpoint Busy, may be retries',
-	15048 : 'Limit exceeds allowable',
-	15049 : 'Bad Account attribute value',
-	15050 : 'Job already in exit state',
-	15051 : 'Job files not copied',
-	15052 : 'unknown job id after clean init',
-	15053 : 'No Master in Sync Set',
-	15054 : 'Invalid dependency',
-	15055 : 'Duplicate entry in List',
-	15056 : 'Bad DIS based Request Protocol',
-	15057 : 'cannot execute there',
-	15058 : 'sister rejected',
-	15059 : 'sister could not communicate',
-	15060 : 'req rejected -server shutting down',
-	15061 : 'not all tasks could checkpoint',
-	15062 : 'Named node is not in the list',
-	15063 : 'node-attribute not recognized',
-	15064 : 'Server has no node list',
-	15065 : 'Node name is too big',
-	15066 : 'Node name already exists',
-	15067 : 'Bad node-attribute value',
-	15068 : 'State values are mutually exclusive',
-	15069 : 'Error(s) during global modification of nodes',
-	15070 : 'could not contact Mom',
-	15071 : 'no time-shared nodes',
-	15201 : 'resource unknown',
-	15202 : 'parameter could not be used',
-	15203 : 'a parameter needed did not exist',
-	15204 : "something specified didn't exist",
-	15205 : 'a system error occured',
-	15206 : 'only part of reservation made'
-}
 
 def error():
   """
@@ -1045,10 +1003,10 @@ def error():
   It says more then a number!
   """
   e = get_error()
-  if errors_txt.has_key(e):
-     return (e, errors_txt[e])
-  else:
-     return (e, "Could not find a text for this error, uhhh")
+  return (e, pbs_strerror(e))
+#     return (e, errors_txt[e])
+#  else:
+#     return (e, "Could not find a text for this error, uhhh")
 
 # This file is compatible with both classic and new-style classes.
 

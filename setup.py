@@ -7,7 +7,7 @@ site_packages_path = sysconfig.get_python_lib(prefix='./')
 setup(
     name='pbs-python',
     packages=['pbs'],
-    version='4.4.1.2',
+    version='4.4.2.1',
     author='Radik Fattakhov',
     author_email='radikft@gmail.com',
     description='openpbs/torque python interface',
@@ -26,7 +26,7 @@ setup(
     long_description='''\
 This is pip-package of pbs_python 4.4.1 (http://oss.trac.surfsara.nl/pbs_python)
 by  Bas van der Vlies (bas.vandervlies@surfsara.nl).
-Native extensions from this package compiled on CentOS 6.5 with PBS Torque 5
+Native extensions from this package compiled on CentOS 7 with PBS Torque 5
 installed on it and probably not compatible with other versions.
 '''
 )
